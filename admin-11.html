@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgriConnect Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F6F1E6; --card:#FFFDF9; --ink:#2A2118; --ink-soft:#5B5140;
+    --forest:#1F3B2C; --forest-light:#335844; --forest-pale:#E4ECE4;
+    --gold:#C1861E; --gold-soft:#E9C77E; --line:#DDD0B0; --danger:#B3432E; --danger-soft:#FBEAE6;
+    --ok:#3E7A4C; --ok-soft:#E4F0E5;
+    --radius:10px;
+    --serif:'Fraunces', Georgia, serif; --sans:'Work Sans', -apple-system, sans-serif; --mono:'IBM Plex Mono', monospace;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:var(--sans); color:var(--ink); background:var(--bg); min-height:100vh; display:flex;}
+  a{color:inherit;}
+  button{font-family:var(--sans); cursor:pointer;}
+
+  #loginScreen{width:100%; min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px;}
+  .login-card{width:100%; max-width:380px; background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:36px 34px;}
+  .login-mark{font-family:var(--serif); font-weight:700; font-size:1.4rem; color:var(--forest); display:flex; align-items:center; gap:8px;}
+  .login-mark svg{width:20px; height:20px;}
+  .login-sub{font-size:.8rem; color:var(--ink-soft); margin:6px 0 26px 0;}
+  label{display:block; font-size:.75rem; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-soft); margin-bottom:6px; margin-top:16px;}
+  input{width:100%; padding:11px 13px; border:1px solid var(--line); border-radius:7px; font-family:var(--sans); font-size:.92rem; background:#fff; color:var(--ink);}
+  input:focus{outline:2px solid var(--gold-soft); outline-offset:1px; border-color:var(--gold);}
+  button.primary{width:100%; margin-top:22px; padding:12px; background:var(--forest); color:#fff; border:none; border-radius:8px; font-weight:600; font-size:.92rem;}
+  button.primary:hover{background:var(--forest-light);}
+  button.primary:disabled{opacity:.6; cursor:not-allowed;}
+  #loginError{display:none; margin-top:14px; padding:10px 12px; background:var(--danger-soft); border:1px solid var(--danger); color:var(--danger); font-size:.82rem; border-radius:6px;}
+  .back-link{display:block; text-align:center; margin-top:18px; font-size:.82rem; color:var(--ink-soft); text-decoration:underline;}
+
+  #adminApp{display:none; width:100%;}
+  .sidebar{width:240px; flex-shrink:0; background:var(--forest); color:#F3EFE2; min-height:100vh; position:fixed; top:0; left:0; bottom:0; padding:28px 0; display:flex; flex-direction:column;}
+  .brand{padding:0 24px 20px 24px; border-bottom:1px solid rgba(243,239,226,0.15); margin-bottom:16px;}
+  .brand-mark{font-family:var(--serif); font-weight:700; font-size:1.3rem; color:var(--gold-soft); display:flex; align-items:center; gap:8px;}
+  .brand-mark svg{width:20px; height:20px;}
+  .brand-sub{font-size:.65rem; letter-spacing:.12em; text-transform:uppercase; color:rgba(243,239,226,0.5); margin-top:6px;}
+  nav.navlinks{flex:1; padding:0 12px;}
+  nav.navlinks button{display:flex; align-items:center; gap:10px; width:100%; text-align:left; background:none; border:none; color:rgba(243,239,226,0.8); font-size:.9rem; padding:10px 14px; border-radius:8px; margin-bottom:2px;}
+  nav.navlinks button:hover{background:rgba(243,239,226,0.08); color:#fff;}
+  nav.navlinks button.active{background:var(--forest-light); color:#fff; font-weight:500;}
+  .sidebar-foot{padding:14px 24px 0 24px; border-top:1px solid rgba(243,239,226,0.15); font-size:.75rem;}
+  #userEmail{color:rgba(243,239,226,0.85); font-weight:500; display:block; margin-bottom:8px; word-break:break-all;}
+  #logoutBtn{background:none; border:1px solid rgba(243,239,226,0.3); color:#F3EFE2; padding:7px 12px; border-radius:6px; font-size:.78rem; width:100%;}
+  #logoutBtn:hover{background:rgba(243,239,226,0.1);}
+
+  main{margin-left:240px; flex:1; padding:44px 50px 70px 50px;}
+  .page{display:none;}
+  .page.active{display:block;}
+  .eyebrow{font-family:var(--mono); font-size:.72rem; letter-spacing:.1em; text-transform:uppercase; color:var(--gold); margin-bottom:8px;}
+  h1.page-title{font-family:var(--serif); font-weight:600; font-size:2rem; color:var(--forest); margin-bottom:18px;}
+  h3{font-family:var(--serif); font-weight:600; font-size:1.1rem; color:var(--ink); margin:0;}
+  p{line-height:1.7; color:var(--ink-soft); margin-bottom:12px; font-size:.94rem;}
+
+  .stat-row{display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:28px;}
+  .stat-card{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:20px 22px;}
+  .stat-card .stat-label{font-family:var(--mono); font-size:.66rem; text-transform:uppercase; color:var(--ink-soft); margin-bottom:8px;}
+  .stat-card .stat-value{font-family:var(--serif); font-size:1.9rem; color:var(--forest); font-weight:600;}
+
+  .panel{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:24px 26px; margin-bottom:20px;}
+  .panel-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;}
+  table.data-table{width:100%; border-collapse:collapse;}
+  table.data-table th, table.data-table td{text-align:left; padding:10px; border-bottom:1px solid var(--line); font-size:.87rem;}
+  table.data-table th{font-family:var(--mono); font-size:.66rem; text-transform:uppercase; color:var(--ink-soft); letter-spacing:.06em;}
+  .empty-state{padding:26px 10px; text-align:center; color:var(--ink-soft); font-size:.88rem;}
+  .status-badge{font-size:.72rem; font-weight:600; padding:3px 9px; border-radius:12px; text-transform:capitalize;}
+  .status-pending{background:#FBF3DE; color:#8a6412;}
+  .status-confirmed{background:var(--ok-soft); color:var(--ok);}
+  .status-delivered{background:var(--forest-pale); color:var(--forest);}
+  .status-cancelled{background:var(--danger-soft); color:var(--danger);}
+  .status-available{background:var(--ok-soft); color:var(--ok);}
+  .del-btn{background:none; border:1px solid var(--danger); color:var(--danger); border-radius:6px; font-size:.76rem; padding:5px 10px;}
+
+  .note-box{background:#FBF3DE; border:1px solid var(--gold-soft); border-left:4px solid var(--gold); border-radius:6px; padding:14px 16px; font-size:.85rem; color:#5c4416; margin-bottom:20px;}
+  .note-box strong{color:#3f2f0f;}
+  code.inline{background:var(--forest-pale); padding:2px 6px; border-radius:4px; font-family:var(--mono); font-size:.82em;}
+
+  @media(max-width:820px){
+    .sidebar{display:none;}
+    main{margin-left:0; padding:70px 20px 50px 20px;}
+    .stat-row{grid-template-columns:1fr 1fr;}
+  }
+</style>
+</head>
+<body>
+
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-mark">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22V12M12 12C12 12 6 11 6 5C12 5 12 12 12 12ZM12 12C12 12 18 11 18 5C12 5 12 12 12 12Z"/></svg>
+      AgriConnect Admin
+    </div>
+    <div class="login-sub">Sign in to manage farmers, buyers, listings and orders.</div>
+    <label for="email">Email</label>
+    <input type="email" id="email" placeholder="admin@example.com" autocomplete="username">
+    <label for="password">Password</label>
+    <input type="password" id="password" placeholder="••••••••" autocomplete="current-password">
+    <button class="primary" id="loginBtn">Sign In</button>
+    <div id="loginError"></div>
+    <a href="index.html" class="back-link">← Back to marketplace</a>
+  </div>
+</div>
+
+<div id="adminApp">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22V12M12 12C12 12 6 11 6 5C12 5 12 12 12 12ZM12 12C12 12 18 11 18 5C12 5 12 12 12 12Z"/></svg>
+        AgriConnect
+      </div>
+      <div class="brand-sub">Admin Panel</div>
+    </div>
+    <nav class="navlinks">
+      <button data-page="dashboard" class="active">Dashboard</button>
+      <button data-page="farmers">Farmers</button>
+      <button data-page="buyers">Buyers</button>
+      <button data-page="listings">Produce Listings</button>
+      <button data-page="orders">Orders</button>
+      <button data-page="activity">Activity Log</button>
+    </nav>
+    <div class="sidebar-foot">
+      <span id="userEmail">—</span>
+      <button id="logoutBtn">Sign Out</button>
+    </div>
+  </aside>
+
+  <main>
+    <section class="page active" id="page-dashboard">
+      <div class="eyebrow">Overview</div>
+      <h1 class="page-title">Dashboard</h1>
+      <div class="stat-row">
+        <div class="stat-card"><div class="stat-label">Farmers</div><div class="stat-value" id="statFarmers">—</div></div>
+        <div class="stat-card"><div class="stat-label">Buyers</div><div class="stat-value" id="statBuyers">—</div></div>
+        <div class="stat-card"><div class="stat-label">Listings</div><div class="stat-value" id="statListings">—</div></div>
+        <div class="stat-card"><div class="stat-label">Orders</div><div class="stat-value" id="statOrders">—</div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h3>Recent Orders</h3></div>
+        <table class="data-table" id="recentOrdersTable">
+          <thead><tr><th>Produce</th><th>Buyer</th><th>Farmer</th><th>Total</th><th>Status</th></tr></thead>
+          <tbody id="recentOrdersBody"><tr><td colspan="5" class="empty-state">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="page" id="page-farmers">
+      <div class="eyebrow">Users</div>
+      <h1 class="page-title">Farmers</h1>
+      <div class="panel">
+        <table class="data-table">
+          <thead><tr><th>Name</th><th>Email</th><th>Listings</th><th>Status</th><th></th></tr></thead>
+          <tbody id="farmersBody"><tr><td colspan="5" class="empty-state">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="page" id="page-buyers">
+      <div class="eyebrow">Users</div>
+      <h1 class="page-title">Buyers</h1>
+      <div class="panel">
+        <table class="data-table">
+          <thead><tr><th>Name</th><th>Email</th><th>Orders Placed</th><th>Status</th><th></th></tr></thead>
+          <tbody id="buyersBody"><tr><td colspan="5" class="empty-state">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="page" id="page-listings">
+      <div class="eyebrow">Marketplace</div>
+      <h1 class="page-title">Produce Listings</h1>
+      <div class="panel">
+        <table class="data-table">
+          <thead><tr><th>Produce</th><th>Farmer</th><th>Price</th><th>Quantity</th><th>Location</th><th></th></tr></thead>
+          <tbody id="listingsBody"><tr><td colspan="6" class="empty-state">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="page" id="page-orders">
+      <div class="eyebrow">Marketplace</div>
+      <h1 class="page-title">Orders</h1>
+      <div class="panel">
+        <table class="data-table">
+          <thead><tr><th>Produce</th><th>Buyer</th><th>Farmer</th><th>Qty</th><th>Total</th><th>Status</th></tr></thead>
+          <tbody id="ordersBody"><tr><td colspan="6" class="empty-state">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="page" id="page-activity">
+      <div class="eyebrow">Audit Trail</div>
+      <h1 class="page-title">Activity Log</h1>
+      <div class="panel">
+        <table class="data-table">
+          <thead><tr><th>When</th><th>Event</th></tr></thead>
+          <tbody id="activityBody"><tr><td colspan="2" class="empty-state">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import { getFirestore, collection, query, orderBy, limit, where, onSnapshot, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAjelFJsCTyl0xvoNTon2HOcA2bIOiVs5A",
+    authDomain: "farmer-9eb0b.firebaseapp.com",
+    projectId: "farmer-9eb0b",
+    storageBucket: "farmer-9eb0b.firebasestorage.app",
+    messagingSenderId: "979762809566",
+    appId: "1:979762809566:web:4cbf3abffa38f3c7b1504f"
+  };
+  const app = initializeApp(firebaseConfig, "admin");
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  // Embedded admin credentials — edit these two lines if you want a different admin login.
+  const ADMIN_EMAIL = "admin@agriconnect.ng";
+  const ADMIN_PASSWORD = "Harvest2026!";
+
+  const loginScreen = document.getElementById('loginScreen');
+  const adminApp = document.getElementById('adminApp');
+  const loginBtn = document.getElementById('loginBtn');
+  const loginError = document.getElementById('loginError');
+  const emailInput = document.getElementById('email');
+  const passwordInput = document.getElementById('password');
+  const userEmailEl = document.getElementById('userEmail');
+  const logoutBtn = document.getElementById('logoutBtn');
+
+  emailInput.value = ADMIN_EMAIL;
+  passwordInput.value = ADMIN_PASSWORD;
+
+  loginBtn.addEventListener('click', async () => {
+    loginError.style.display = 'none';
+    loginBtn.disabled = true; loginBtn.textContent = 'Signing in…';
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+    try{
+      await signInWithEmailAndPassword(auth, email, password);
+    }catch(err){
+      const retriableCodes = ['auth/user-not-found', 'auth/invalid-credential', 'auth/invalid-login-credentials'];
+      if(retriableCodes.includes(err.code) && email === ADMIN_EMAIL && password === ADMIN_PASSWORD){
+        try{
+          await createUserWithEmailAndPassword(auth, email, password);
+        }catch(err2){
+          loginError.textContent = 'Sign-in failed: ' + err2.message.replace('Firebase: ', '');
+          loginError.style.display = 'block';
+        }
+      } else {
+        loginError.textContent = 'Sign-in failed: ' + err.message.replace('Firebase: ', '');
+        loginError.style.display = 'block';
+      }
+    }finally{
+      loginBtn.disabled = false; loginBtn.textContent = 'Sign In';
+    }
+  });
+  passwordInput.addEventListener('keydown', e => { if(e.key === 'Enter') loginBtn.click(); });
+  logoutBtn.addEventListener('click', () => signOut(auth));
+
+  onAuthStateChanged(auth, (user) => {
+    // Only the designated admin account may see the dashboard.
+    // A farmer or buyer session (from index.html) shares the same Firebase
+    // project auth state, so without this check, anyone signed in on the
+    // marketplace would land straight in the admin panel.
+    if(user && user.email === ADMIN_EMAIL){
+      loginScreen.style.display = 'none';
+      adminApp.style.display = 'block';
+      userEmailEl.textContent = user.email;
+    } else {
+      loginScreen.style.display = 'flex';
+      adminApp.style.display = 'none';
+    }
+  });
+
+  // nav
+  const navButtons = document.querySelectorAll('.navlinks button');
+  const pages = document.querySelectorAll('#adminApp .page');
+  navButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      pages.forEach(p => p.classList.toggle('active', p.id === 'page-' + btn.dataset.page));
+      navButtons.forEach(b => b.classList.toggle('active', b === btn));
+    });
+  });
+
+  function badge(s){ return `<span class="status-badge status-${s}">${s}</span>`; }
+
+  // Live users
+  let users = [];
+  onSnapshot(collection(db, 'users'), (snap) => {
+    users = []; snap.forEach(d => users.push({ id: d.id, ...d.data() }));
+    const farmers = users.filter(u => u.role === 'farmer');
+    const buyers = users.filter(u => u.role === 'buyer');
+    document.getElementById('statFarmers').textContent = farmers.length;
+    document.getElementById('statBuyers').textContent = buyers.length;
+
+    document.getElementById('farmersBody').innerHTML = farmers.length ? farmers.map(f => `
+      <tr>
+        <td>${f.name}</td><td>${f.email}</td><td>${allListings.filter(l=>l.farmerId===f.id).length}</td>
+        <td>${f.blocked ? '<span class="status-badge status-cancelled">blocked</span>' : '<span class="status-badge status-available">active</span>'}</td>
+        <td><button class="del-btn" data-toggleblock="${f.id}" data-blocked="${!!f.blocked}" style="border-color:${f.blocked ? 'var(--ok)' : 'var(--danger)'}; color:${f.blocked ? 'var(--ok)' : 'var(--danger)'};">${f.blocked ? 'Unblock' : 'Block'}</button></td>
+      </tr>
+    `).join('') : `<tr><td colspan="5" class="empty-state">No farmers registered yet.</td></tr>`;
+
+    document.getElementById('buyersBody').innerHTML = buyers.length ? buyers.map(b => `
+      <tr>
+        <td>${b.name}</td><td>${b.email}</td><td>${allOrders.filter(o=>o.buyerId===b.id).length}</td>
+        <td>${b.blocked ? '<span class="status-badge status-cancelled">blocked</span>' : '<span class="status-badge status-available">active</span>'}</td>
+        <td><button class="del-btn" data-toggleblock="${b.id}" data-blocked="${!!b.blocked}" style="border-color:${b.blocked ? 'var(--ok)' : 'var(--danger)'}; color:${b.blocked ? 'var(--ok)' : 'var(--danger)'};">${b.blocked ? 'Unblock' : 'Block'}</button></td>
+      </tr>
+    `).join('') : `<tr><td colspan="5" class="empty-state">No buyers registered yet.</td></tr>`;
+
+    document.querySelectorAll('[data-toggleblock]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const nowBlocked = btn.dataset.blocked === 'true';
+        const label = nowBlocked ? 'unblock' : 'block';
+        if(confirm(`Are you sure you want to ${label} this user?`)){
+          await updateDoc(doc(db, 'users', btn.dataset.toggleblock), { blocked: !nowBlocked });
+        }
+      });
+    });
+  });
+
+  // Live listings
+  let allListings = [];
+  onSnapshot(collection(db, 'listings'), (snap) => {
+    allListings = []; snap.forEach(d => allListings.push({ id: d.id, ...d.data() }));
+    document.getElementById('statListings').textContent = allListings.length;
+    document.getElementById('listingsBody').innerHTML = allListings.length ? allListings.map(l => `
+      <tr>
+        <td>${l.produceName}</td><td>${l.farmerName || '—'}</td>
+        <td>₦${Number(l.price).toLocaleString()}/${l.unit}</td>
+        <td>${l.quantity} ${l.unit}</td><td>${l.location || '—'}</td>
+        <td><button class="del-btn" data-del="${l.id}">Remove</button></td>
+      </tr>
+    `).join('') : `<tr><td colspan="6" class="empty-state">No listings yet.</td></tr>`;
+    document.querySelectorAll('#listingsBody [data-del]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if(confirm('Remove this listing?')) await deleteDoc(doc(db, 'listings', btn.dataset.del));
+      });
+    });
+  });
+
+  // Live orders
+  let allOrders = [];
+  onSnapshot(collection(db, 'orders'), (snap) => {
+    allOrders = []; snap.forEach(d => allOrders.push({ id: d.id, ...d.data() }));
+    document.getElementById('statOrders').textContent = allOrders.length;
+
+    document.getElementById('ordersBody').innerHTML = allOrders.length ? allOrders.map(o => `
+      <tr>
+        <td>${o.produceName}</td><td>${o.buyerName || '—'}</td><td>${o.farmerName || '—'}</td>
+        <td>${o.quantity} ${o.unit || ''}</td><td>₦${Number(o.totalPrice).toLocaleString()}</td>
+        <td><select class="status-select" data-order="${o.id}">
+          <option value="pending" ${o.status==='pending'?'selected':''}>Pending</option>
+          <option value="confirmed" ${o.status==='confirmed'?'selected':''}>Confirmed</option>
+          <option value="delivered" ${o.status==='delivered'?'selected':''}>Delivered</option>
+          <option value="cancelled" ${o.status==='cancelled'?'selected':''}>Cancelled</option>
+        </select></td>
+      </tr>
+    `).join('') : `<tr><td colspan="6" class="empty-state">No orders yet.</td></tr>`;
+    document.querySelectorAll('#ordersBody .status-select').forEach(sel => {
+      sel.addEventListener('change', async () => {
+        await updateDoc(doc(db, 'orders', sel.dataset.order), { status: sel.value });
+      });
+    });
+
+    const recent = [...allOrders].sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0)).slice(0,5);
+    document.getElementById('recentOrdersBody').innerHTML = recent.length ? recent.map(o => `
+      <tr>
+        <td>${o.produceName}</td><td>${o.buyerName || '—'}</td><td>${o.farmerName || '—'}</td>
+        <td>₦${Number(o.totalPrice).toLocaleString()}</td><td>${badge(o.status)}</td>
+      </tr>
+    `).join('') : `<tr><td colspan="5" class="empty-state">No orders yet.</td></tr>`;
+  });
+
+  // Live activity log
+  onSnapshot(query(collection(db, 'activity_logs'), orderBy('createdAt', 'desc'), limit(100)), (snap) => {
+    const rows = [];
+    snap.forEach(d => {
+      const a = d.data();
+      const when = a.createdAt?.toDate ? a.createdAt.toDate().toLocaleString() : '—';
+      rows.push(`<tr><td style="white-space:nowrap; color:var(--ink-soft); font-family:var(--mono); font-size:.78rem;">${when}</td><td>${a.detail}</td></tr>`);
+    });
+    document.getElementById('activityBody').innerHTML = rows.length ? rows.join('') : `<tr><td colspan="2" class="empty-state">No activity yet.</td></tr>`;
+  });
+</script>
+
+</body>
+</html>
